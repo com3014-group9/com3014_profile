@@ -1,7 +1,7 @@
 services:
   profiler-app:
     build:
-      context: ../com3014_profiler
+      context: ../com3014_profile
       dockerfile: Dockerfile.profiler
     command: python -u main.py
     ports:

@@ -109,7 +109,7 @@ def follow_user(user_id):
 
 @profiler.route('/unfollow_user', methods=['POST'])
 @auth_required
-def follow_user(user_id):
+def unfollow_user(user_id):
     if "user_to_unfollow" not in request.form:
         return 400 
 
