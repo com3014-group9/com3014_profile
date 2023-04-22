@@ -1,0 +1,21 @@
+services:
+  profiler-app:
+    build:
+      context: ../com3014_profiler
+      dockerfile: Dockerfile.profiler
+    command: python -u main.py
+    ports:
+      - "5051:5051"
+    volumes:
+      - ./profile_server:/profiler
+    links:
+      - profiler-db
+  profiler-db:
+    image: mongo:latest
+    hostname: test_mongodb
+    environment:
+      - MONGO_INITDB_DATABASE=com3014_profiles
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    ports:
+      - 27017:27017
