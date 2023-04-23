@@ -37,7 +37,7 @@ def close_db(exception):
 @auth_required
 def create_user(user_id):
     user = get_db().profile_data.find_one({"user_id": user_id})
-    if user is not None:
+    if user is None:
         get_db().profile_data.insert_one({
             'user_id': user_id,
             'user_name' : f"user_{user_id}", 
@@ -46,9 +46,9 @@ def create_user(user_id):
             'followed_by' : []
         })
 
-        return 200
+        return {"user_id": user_id}, 200
     else:
-        return 404 
+        return {"error": "User already exists"}, 400 
 
 @profiler.route('/update_user_pfp', methods=['POST'])
 @auth_required
@@ -59,61 +59,66 @@ def update_user_pfp(user_id):
         values = { "$set": { "pfp": request.form['pfp'] } }
         get_db().profile_data.update_one(query, values)
 
-        return 200 
-    elif user is not None:
-        return 400
+        return {"pfp" : request.form['pfp']}, 200 
+    elif user is None:
+        return {"error": "User doesn't exist"}, 404
     else:
-        return 404 
+        return {"error": "MEOW I'M A CAT"}, 404 
 
 @profiler.route('/get_followers', methods=['GET'])
 def get_followers():
     if "user_id" not in request.form:
-        return 400 
+        return {"error" : "Bad request, try again"}, 400 
     
     user = get_db().profile_data.find_one({"user_id": request.form["user_id"]})
     if user is not None:
-        return user["followed_by"], 200
-    return 404
+        return {"followers": user["followed_by"]}, 200
+    return {"error" : "User not found"}, 404
     
 @profiler.route('/get_follows', methods=['GET'])
 def get_follows():
     if "user_id" not in request.form:
-        return 400 
+        return {"error" : "Bad request, try again"}, 400 
     
     user = get_db().profile_data.find_one({"user_id": request.form["user_id"]})
     if user is not None:
-        return user["follows"], 200
-    return 404 
+        return {"follows": user["follows"]}, 200
+    return {"error" : "User not found"}, 404 
 
 @profiler.route('/follow_user', methods=['POST'])
 @auth_required
 def follow_user(user_id):
     if "user_to_follow" not in request.form:
-        return 400 
+        return {"error" : "Bad request, try again"}, 400
 
-    user = get_db().profile_data.find_one({"user_id": request.form["user_id"]})
+    if get_db().profile_data.find_one({"user_id": request.form["user_to_follow"]}) == None:
+        return {"error" : "Unable to follow user that doesn't exist"}, 404
+
+    user = get_db().profile_data.find_one({"user_id": user_id})
     if user is not None:
         query = { "user_id": user_id }
         values = {'$push': {'follows': request.form["user_to_follow"]}}
         get_db().profile_data.update_one(query, values)
-
         query = { "user_id": request.form["user_to_follow"] }
         values = {'$push': {'followed_by': user_id}}
         get_db().profile_data.update_one(query, values)
 
-        return 200 
-    elif user is not None:
-        return 400
+        return {"user_to_follow" : request.form["user_to_follow"]}, 200 
+    elif user is None:
+        return {"error" : "User not found"}, 404
     else:
-        return 404 
+        return {"error" : "Something went wrong, try again"}, 400 
 
 @profiler.route('/unfollow_user', methods=['POST'])
 @auth_required
 def unfollow_user(user_id):
     if "user_to_unfollow" not in request.form:
-        return 400 
+        return {"error" : "Bad request, try again"}, 400 
 
-    user = get_db().profile_data.find_one({"user_id": request.form["user_id"]})
+    if get_db().profile_data.find_one({"user_id": request.form["user_to_unfollow"]}) == None:
+        return {"error" : "Unable to follow user that doesn't exist"}, 404
+
+    user = get_db().profile_data.find_one({"user_id": user_id})
     if user is not None:
         query = { "user_id": user_id }
         values = {'$pull': {'follows': request.form["user_to_unfollow"]}}
@@ -123,11 +128,11 @@ def unfollow_user(user_id):
         values = {'$pull': {'followed_by': user_id}}
         get_db().profile_data.update_one(query, values)
 
-        return 200 
-    elif user is not None:
-        return 400
+        return {"user_to_unfollow" : request.form["user_to_unfollow"]}, 200 
+    elif user is None:
+        return {"error" : "User not found"}, 400
     else:
-        return 404 
+        return {"error" : "Something went wrong, try again"}, 404 
 
 if __name__ == "__main__":
     profile_db = get_db_client().com3014_profiles
