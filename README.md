@@ -1,28 +1,52 @@
 
-## Create files and folders
+# com3014_profile
 
-This service is responsible for managing user profiles for meowstagram. All paths start with a **/profile** prefix. 
+This is a service for handling user profiles.
 
-**/create_user** - [AUTHENTICATED] POST
+## Overview
+This service handles the following functions:
+- Storage of information about user profile
+- Update of the user's profile picture 
+- Follows/unfollows
+
+## Usage
+Docker must be installed on the system. Run `docker-compose up -d --build` from the root of the repository. Once running, the service is accessible on the localhost:5051.
+
+## Testing
+Automatic testing is handled by pytest. To run the tests, build and start the container using the `docker-compose up -d --build` command and then `docker compose run profiler-app python3 -m pytest` from the root of the repository.
+
+## Endpoints
+
+### **/create_user** - [AUTHENTICATED] Params: None
 
 Creates user with default params, call this during initialistation. 
 
-**/update_user_pfp** - [AUTHENTICATED ] POST
+### **/update_user_pfp** - [AUTHENTICATED ] Params: None
 
-Takes pfp id and updates it 
+Updates user's profile picture to a new one. Form-data:
 
-**/get_followers** - GET
+- pfp - id of the image to use as a new profile picture.
 
-Return list of ids of user's followers
+### **/get_followers** - Params: None
 
-**/get_follows** - GET
+Return list of ids of user's followers. Form-data:
 
-Return list of ids of user's follows
+- user_id - id of the user the request corresponds to.
 
-**/follow_user** - [AUTHENTICATED ] POST
+### **/get_follows** - Params: None
 
-Follows supplied user
+Return list of ids of user's follows. Form-data:
 
-**/unfollow_user** - [AUTHENTICATED ] POST
+- user_id - id of the user the request corresponds to.
 
-Unfollows suplied user
+### **/follow_user** - [AUTHENTICATED ] Params: None
+
+Follows supplied user. Form-data:
+
+- user_to_follow - id of the user the needs to be followed.
+
+### **/unfollow_user** - [AUTHENTICATED ] Params: None
+
+Unfollows suplied user. Form-data:
+
+- user_to_unfollow - id of the user the needs to be unfollowed.
